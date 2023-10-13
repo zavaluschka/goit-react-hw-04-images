@@ -1,35 +1,24 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { Modal } from 'components/Modal/Modal';
 import gallItem from './ImageGalleryItem.module.css';
 
-export class ImageGalleryItem extends Component {
-  state = { isOpenModal: false };
+export const ImageGalleryItem = ({ modalImg, src, alt }) => {
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  // state = { isOpenModal: false };
 
-  toggleModal = () => {
-    this.setState(({ isOpenModal }) => ({ isOpenModal: !isOpenModal }));
+  const toggleModal = () => {
+    setIsOpenModal(isOpenModal => !isOpenModal);
   };
 
-  render() {
-    const { modalImg, src, alt } = this.props;
-    const { isOpenModal } = this.state;
-
-    return (
-      <li
-        className={gallItem.galleryItem}
-        onClick={() => {
-          this.toggleModal();
-        }}
-      >
-        <img
-          className={gallItem.itemImage}
-          src={src}
-          alt={alt}
-          loading="lazy"
-        />
-        {isOpenModal && (
-          <Modal img={modalImg} alt={alt} onToggle={this.toggleModal} />
-        )}
-      </li>
-    );
-  }
-}
+  return (
+    <li
+      className={gallItem.galleryItem}
+      onClick={() => {
+        toggleModal();
+      }}
+    >
+      <img className={gallItem.itemImage} src={src} alt={alt} loading="lazy" />
+      {isOpenModal && <Modal img={modalImg} alt={alt} onToggle={toggleModal} />}
+    </li>
+  );
+};

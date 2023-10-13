@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -7,76 +7,70 @@ import { Button } from './Button/Button';
 import { fetchImages } from '../services/Api';
 import Notiflix from 'notiflix';
 
-export default class App extends Component {
-  state = {
-    textValue: '',
-    page: 1,
-    images: [],
-    loading: false,
-    totalPages: 0,
-  };
+export const App = () => {
+  const [textValue, setTextValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
 
-  loadImages = async () => {
-    const { page, textValue } = this.state;
-    try {
-      this.setState({ loading: true });
+  // state = {
+  //   textValue: '',
+  //   page: 1,
+  //   images: [],
+  //   loading: false,
+  //   totalPages: 0,
+  // };
 
-      const data = await fetchImages(textValue, page);
-      if (data.hits.length === 0) {
-        Notiflix.Notify.failure(
-          'Error, there are no images matching these words'
-        );
-
-        return;
-      }
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        totalPages: Math.ceil(data.totalHits / 12),
-      }));
-    } catch (error) {
-      Notiflix.Notify.failure(`Error occurred, please try again`);
-    } finally {
-      this.setState({ loading: false });
+  useEffect(() => {
+    if (!textValue) {
+      return;
     }
-  };
+    async function loadImages() {
+      try {
+        setLoading(true);
 
-  componentDidUpdate(_, prevState) {
-    if (
-      this.state.page !== prevState.page ||
-      this.state.textValue !== prevState.textValue
-    ) {
-      this.loadImages();
-    }
-  }
-  onSearch = textValue => {
-    this.setState(prevState => {
-      if (textValue === prevState.textValue) {
-        Notiflix.Notify.failure('You have already search by this request');
+        const data = await fetchImages(textValue, page);
+        setImages(prevImg => [...prevImg, ...data.hits]);
+        if (data.hits.length === 0) {
+          Notiflix.Notify.failure(
+            'Error, there are no images matching these words'
+          );
+
+          return;
+        }
+
+        setTotalPages(Math.ceil(data.totalHits / 12));
+      } catch (error) {
+        Notiflix.Notify.failure(`Error occurred, please try again`);
+      } finally {
+        setLoading(false);
       }
-    });
-    this.setState({
-      textValue,
-      images: [],
-      page: 1,
-    });
+    }
+    loadImages();
+  }, [textValue, page]);
+
+  const onSearch = textValue => {
+    setTextValue(textValue);
+
+    setImages([]);
+    setPage(1);
+    setTotalPages(0);
   };
 
-  loadMoreBtn = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const loadMoreBtn = () => {
+    setPage(prevState => prevState + 1);
   };
-  render() {
-    const { loading, images, totalPages, page } = this.state;
 
-    return (
-      <div className="mainBlock">
-        <Searchbar getSearchData={this.onSearch} />
-        <ImageGallery images={images} />
-        {loading && <Loader />}
-        {images.length > 0 && totalPages > page && (
-          <Button onClick={this.loadMoreBtn} />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="mainBlock">
+      <Searchbar getSearchData={onSearch} />
+      <ImageGallery images={images} />
+      {loading && <Loader />}
+      {images.length > 0 && totalPages > page && (
+        <Button onClick={loadMoreBtn} />
+      )}
+    </div>
+  );
+};
+export default App
