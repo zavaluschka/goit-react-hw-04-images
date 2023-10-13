@@ -14,13 +14,7 @@ export const App = () => {
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
 
-  // state = {
-  //   textValue: '',
-  //   page: 1,
-  //   images: [],
-  //   loading: false,
-  //   totalPages: 0,
-  // };
+ 
 
   useEffect(() => {
     if (!textValue) {
